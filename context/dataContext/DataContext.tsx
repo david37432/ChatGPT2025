@@ -43,7 +43,7 @@ export const DataContextProvider = ({ children }: { children: React.ReactNode })
 
     const sendMessage = async (text: string, id: string) => {
         if (!text.trim()) return;
-
+    
         const newMessage: MessageWithKey = {
             idts: Date.now().toString(),
             text,
@@ -53,16 +53,16 @@ export const DataContextProvider = ({ children }: { children: React.ReactNode })
             message: text,
             key: Date.now().toString(),
         };
-
+    
         setIsLoading(true);
         setMessages((prev) => [...prev, newMessage]);
-
+    
         try {
             const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCFPEdbkbO_90iTylK8KrsOtQzKSVCxiNE", {
                 method: "POST",
                 body: JSON.stringify({ contents: [{ parts: [{ text }] }] }),
             });
-
+    
             const data: APIResponse = await response.json();
             const aiMessage: MessageWithKey = {
                 idts: Date.now().toString(),
@@ -73,13 +73,21 @@ export const DataContextProvider = ({ children }: { children: React.ReactNode })
                 message: data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response",
                 key: Date.now().toString(),
             };
-
+    
             setMessages((prev) => [...prev, aiMessage]);
-
+    
             const docRef = doc(db, "conversations", id);
-            await updateDoc(docRef, {
-                messages: arrayUnion(newMessage, aiMessage),
-            });
+            const docSnap = await getDoc(docRef);
+    
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const isFirstMessage = data.messages.length === 0;
+    
+                await updateDoc(docRef, {
+                    messages: arrayUnion(newMessage, aiMessage),
+                    ...(isFirstMessage && { title: text }), // Actualiza el título si es el primer mensaje
+                });
+            }
         } catch (error) {
             console.error("Error:", error);
         } finally {

@@ -13,6 +13,8 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useDataContext } from "@/context/dataContext/DataContext";
 import { Ionicons } from "@expo/vector-icons";
+import { deleteDoc, doc } from "firebase/firestore";
+import { db } from "@/utils/FirebaseConfig";
 
 const EmptyConversation = () => {
     const router = useRouter();
@@ -30,6 +32,13 @@ const EmptyConversation = () => {
         setMessage("");
     };
 
+    const handleBackToDashboard = async () => {
+        if (messages.length === 0 && id) {
+            await deleteDoc(doc(db, "conversations", id as string)); // Eliminar la conversación si está vacía
+        }
+        router.navigate("/dashboard");
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -37,7 +46,7 @@ const EmptyConversation = () => {
         >
             <View style={styles.container}>
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => router.navigate("/dashboard")}>
+                    <TouchableOpacity onPress={handleBackToDashboard}>
                         <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
                     </TouchableOpacity>
                     <Image
@@ -52,10 +61,7 @@ const EmptyConversation = () => {
                     keyExtractor={(item) => item.key}
                     renderItem={({ item }) => (
                         <View
-                            style={[
-                                styles.messageBubble,
-                                item.sender === "user" ? styles.userBubble : styles.botBubble,
-                            ]}
+                            style={[styles.messageBubble, item.sender === "user" ? styles.userBubble : styles.botBubble]}
                         >
                             <RNText style={styles.messageText}>{item.text}</RNText>
                         </View>
