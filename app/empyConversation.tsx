@@ -22,16 +22,19 @@ const EmptyConversation = () => {
     const { messages, isLoading, fetchMessages, sendMessage } = useDataContext();
     const [message, setMessage] = useState("");
 
+    // Cargar mensajes de la conversación cuando el ID esté disponible
     useEffect(() => {
         if (id) fetchMessages(id as string);
     }, [id]);
 
+    // Maneja el envío de un mensaje
     const handleSend = async () => {
-        if (!message.trim() || !id) return;
+        if (!message.trim() || !id) return; // No envía mensajes vacíos
         await sendMessage(message, id as string);
-        setMessage("");
+        setMessage(""); // Limpia el campo de entrada
     };
 
+    // Maneja la navegación de regreso al dashboard y elimina la conversación si está vacía
     const handleBackToDashboard = async () => {
         if (messages.length === 0 && id) {
             await deleteDoc(doc(db, "conversations", id as string)); // Eliminar la conversación si está vacía
@@ -45,6 +48,7 @@ const EmptyConversation = () => {
             style={{ flex: 1 }}
         >
             <View style={styles.container}>
+                {/* Encabezado de la conversación con botón de retroceso y logo */}
                 <View style={styles.header}>
                     <TouchableOpacity onPress={handleBackToDashboard}>
                         <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
@@ -56,6 +60,7 @@ const EmptyConversation = () => {
                     <View style={{ width: 24 }} />
                 </View>
 
+                {/* Lista de mensajes */}
                 <FlatList
                     data={messages}
                     keyExtractor={(item) => item.key}
@@ -74,6 +79,7 @@ const EmptyConversation = () => {
                     }
                 />
 
+                {/* Entrada de texto y botón de envío */}
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
@@ -92,6 +98,7 @@ const EmptyConversation = () => {
     );
 };
 
+// Estilos de la interfaz
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#343541", paddingTop: 40, paddingBottom: 25 },
     header: {

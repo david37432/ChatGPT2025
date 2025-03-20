@@ -4,17 +4,20 @@ import { db } from "@/utils/FirebaseConfig";
 import { APIResponse } from "@/interfaces/Responses";
 import { Message } from "@/interfaces/AppInterfaces";
 
+// Interfaz que extiende Message y agrega una clave única
 interface MessageWithKey extends Message {
     key: string;
 }
 
+// Interfaz del contexto de datos con los estados y funciones disponibles
 interface DataContextType {
-    messages: MessageWithKey[];
-    isLoading: boolean;
-    fetchMessages: (id: string) => Promise<void>;
-    sendMessage: (text: string, id: string) => Promise<void>;
+    messages: MessageWithKey[]; // Lista de mensajes
+    isLoading: boolean; // Estado de carga
+    fetchMessages: (id: string) => Promise<void>; // Función para obtener mensajes
+    sendMessage: (text: string, id: string) => Promise<void>; // Función para enviar mensajes
 }
 
+// Creación del contexto con valores predeterminados
 const DataContext = createContext<DataContextType>({
     messages: [],
     isLoading: false,
@@ -22,10 +25,12 @@ const DataContext = createContext<DataContextType>({
     sendMessage: async () => {},
 });
 
+// Proveedor del contexto que maneja los mensajes
 export const DataContextProvider = ({ children }: { children: React.ReactNode }) => {
     const [messages, setMessages] = useState<MessageWithKey[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    // Función para obtener mensajes desde Firebase
     const fetchMessages = async (id: string) => {
         if (!id) return;
         const docRef = doc(db, "conversations", id);
@@ -33,6 +38,7 @@ export const DataContextProvider = ({ children }: { children: React.ReactNode })
 
         if (docSnap.exists()) {
             const data = docSnap.data();
+            // Se formatean los mensajes agregando una clave única
             const formattedMessages = data.messages.map((msg: Message, index: number) => ({
                 ...msg,
                 key: index.toString()
@@ -41,9 +47,11 @@ export const DataContextProvider = ({ children }: { children: React.ReactNode })
         }
     };
 
+    // Función para enviar un mensaje y almacenar la respuesta de la IA
     const sendMessage = async (text: string, id: string) => {
         if (!text.trim()) return;
     
+        // Se crea un nuevo mensaje de usuario
         const newMessage: MessageWithKey = {
             idts: Date.now().toString(),
             text,
@@ -58,12 +66,14 @@ export const DataContextProvider = ({ children }: { children: React.ReactNode })
         setMessages((prev) => [...prev, newMessage]);
     
         try {
-            const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCFPEdbkbO_90iTylK8KrsOtQzKSVCxiNE", {
+            // Se envía la solicitud a la API de IA
+            const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=API_KEY", {
                 method: "POST",
                 body: JSON.stringify({ contents: [{ parts: [{ text }] }] }),
             });
     
             const data: APIResponse = await response.json();
+            // Se genera un mensaje de la IA con la respuesta obtenida
             const aiMessage: MessageWithKey = {
                 idts: Date.now().toString(),
                 text: data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response",
@@ -76,6 +86,7 @@ export const DataContextProvider = ({ children }: { children: React.ReactNode })
     
             setMessages((prev) => [...prev, aiMessage]);
     
+            // Se actualiza Firebase con los mensajes
             const docRef = doc(db, "conversations", id);
             const docSnap = await getDoc(docRef);
     
@@ -85,7 +96,7 @@ export const DataContextProvider = ({ children }: { children: React.ReactNode })
     
                 await updateDoc(docRef, {
                     messages: arrayUnion(newMessage, aiMessage),
-                    ...(isFirstMessage && { title: text }), // Actualiza el título si es el primer mensaje
+                    ...(isFirstMessage && { title: text }), // Si es el primer mensaje, se usa como título
                 });
             }
         } catch (error) {
@@ -102,4 +113,5 @@ export const DataContextProvider = ({ children }: { children: React.ReactNode })
     );
 };
 
+// Hook personalizado para acceder al contexto
 export const useDataContext = () => useContext(DataContext);

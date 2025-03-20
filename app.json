@@ -1,10 +1,10 @@
 {
   "expo": {
     "name": "chatgpt2025_2",
-    "slug": "chatgpt2025_2",
+    "slug": "chatgpt",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/LogoChat.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -13,9 +13,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/LogoChat.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.david3743.chatgpt"
     },
     "web": {
       "bundler": "metro",
@@ -27,7 +28,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/LogoChat.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
@@ -36,6 +37,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "825d5066-e642-434e-9fb8-817713d4fdbb"
+      }
+    },
+    "owner": "david3743"
   }
 }

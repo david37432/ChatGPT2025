@@ -115,10 +115,13 @@ const Dashboard: React.FC = () => {
           <Text style={styles.menuText}>Updates & FAQ</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.menuItem, styles.logout]}>
-          <Image source={require("../assets/images/LogOut.png")} style={[styles.icon, styles.logoutIcon]} />
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.menuItem, styles.logout]} 
+          onPress={() => router.push("../autentication")}
+>
+  <Image source={require("../assets/images/LogOut.png")} style={[styles.icon, styles.logoutIcon]} />
+  <Text style={styles.logoutText}>Logout</Text>
+</TouchableOpacity>
       </View>
     </View>
   );
